@@ -1,0 +1,34 @@
+# Deployment definition
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: post-service
+  template:
+    metadata:
+      labels:
+        app: post-service
+    spec:
+      containers:
+        - name: post-service
+          image: social-media-app-post-service
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8110
+---
+# Service definition
+apiVersion: v1
+kind: Service
+metadata:
+  name: post-service
+spec:
+  selector:
+    app: post-service
+  ports:
+    - port: 8110
+      targetPort: 8110
+  type: LoadBalancer

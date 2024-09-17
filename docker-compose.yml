@@ -1,0 +1,154 @@
+version: "3.8"
+name: social-media-app
+services:
+  spacedb:
+    image: mysql
+    container_name: spacedb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: milkyway
+    ports:
+      - "3306:3306"
+    volumes:
+      - spacedata:/var/lib/mysql
+    networks:
+      - spacenet
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: spacedb
+      MYSQL_ROOT_PASSWORD: milkyway
+    ports:
+      - "8000:80"
+    networks:
+      - spacenet
+    depends_on:
+      - spacedb
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    restart: always
+    ports:
+      - "9411:9411"
+    networks:
+      - spacenet
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: always
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - spacenet
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - spacenet
+
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
+    restart: always
+    ports:
+      - "8036:8036"
+    networks:
+      - spacenet
+    depends_on:
+      - zipkin
+      - prometheus
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - spacenet
+    depends_on:
+      - spacedb
+      - zipkin
+      - prometheus
+      - eureka-server
+      - administration-service
+      - user-service
+      - post-service
+      - chat-service
+
+  administration-service:
+    build: ./administration-service
+    container_name: administration-service
+    restart: always
+    ports:
+      - "8090:8090"
+    networks:
+      - spacenet
+    depends_on:
+      - zipkin
+      - prometheus
+      - eureka-server
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    restart: always
+    ports:
+      - "8100:8100"
+    networks:
+      - spacenet
+    depends_on:
+      - spacedb
+      - zipkin
+      - prometheus
+      - eureka-server
+      - post-service
+      - chat-service
+
+  post-service:
+    build: ./post-service
+    container_name: post-service
+    restart: always
+    ports:
+      - "8110:8110"
+    networks:
+      - spacenet
+    depends_on:
+      - spacedb
+      - zipkin
+      - prometheus
+      - eureka-server
+
+  chat-service:
+    build: ./chat-service
+    container_name: chat-service
+    restart: always
+    ports:
+      - "8120:8120"
+    networks:
+      - spacenet
+    depends_on:
+      - spacedb
+      - zipkin
+      - prometheus
+      - eureka-server
+
+volumes:
+  spacedata:
+
+networks:
+  spacenet:

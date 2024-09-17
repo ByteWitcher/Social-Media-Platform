@@ -1,0 +1,40 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  - job_name: "eureka-server"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["eureka-server:8036"]
+
+  - job_name: "api-gateway"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["api-gateway:8080"]
+
+  - job_name: "administration-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["administration-service:8090"]
+
+  - job_name: "user-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["user-service:8100"]
+
+  - job_name: "post-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["post-service:8110"]
+
+  - job_name: "chat-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["chat-service:8120"]

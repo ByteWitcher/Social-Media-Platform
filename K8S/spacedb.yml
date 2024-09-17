@@ -1,0 +1,54 @@
+# Persistent Volumes definition
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spacedb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+---
+# Deployment definition
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spacedb
+spec:
+  selector:
+    matchLabels:
+      app: spacedb
+  template:
+    metadata:
+      labels:
+        app: spacedb
+    spec:
+      containers:
+        - name: spacedb
+          image: mysql
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: milkyway
+          volumeMounts:
+            - name: storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: spacedb-pvc
+---
+# Service definition
+apiVersion: v1
+kind: Service
+metadata:
+  name: spacedb
+spec:
+  selector:
+    app: spacedb
+  ports:
+    - port: 3306
+      targetPort: 3306

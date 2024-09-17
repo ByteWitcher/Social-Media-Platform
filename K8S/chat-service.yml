@@ -1,0 +1,34 @@
+# Deployment definition
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-service
+  template:
+    metadata:
+      labels:
+        app: chat-service
+    spec:
+      containers:
+        - name: chat-service
+          image: social-media-app-chat-service
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8120
+---
+# Service definition
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-service
+spec:
+  selector:
+    app: chat-service
+  ports:
+    - port: 8120
+      targetPort: 8120
+  type: LoadBalancer

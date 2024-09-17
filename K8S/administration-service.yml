@@ -1,0 +1,34 @@
+# Deployment definition
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: administration-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: administration-service
+  template:
+    metadata:
+      labels:
+        app: administration-service
+    spec:
+      containers:
+        - name: administration-service
+          image: social-media-app-administration-service
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8090
+---
+# Service definition
+apiVersion: v1
+kind: Service
+metadata:
+  name: administration-service
+spec:
+  selector:
+    app: administration-service
+  ports:
+    - port: 8090
+      targetPort: 8090
+  type: LoadBalancer

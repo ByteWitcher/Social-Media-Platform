@@ -1,0 +1,91 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "maven"
+
+      - name: Build and test Spring Boot apps
+        run: |
+          springApps=("eureka-server" "api-gateway" "administration-service" "user-service" "post-service" "chat-service")
+
+          for app in "${springApps[@]}"; do
+            cd $app
+            mvn clean test package
+            cd ..
+          done
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: push image eureka-server to docker hub
+        uses: docker/build-push-action@v5
+        with:
+          context: ./eureka-server/
+          file: ./eureka-server/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/smp:eureka-server
+
+      - name: push image api-gateway to docker hub
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api-gateway/
+          file: ./api-gateway/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/smp:api-gateway
+
+      - name: push image administration-service to docker hub
+        uses: docker/build-push-action@v5
+        with:
+          context: ./administration-service/
+          file: ./administration-service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/smp:administration-service
+
+      - name: push image user-service to docker hub
+        uses: docker/build-push-action@v5
+        with:
+          context: ./user-service/
+          file: ./user-service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/smp:user-service
+
+      - name: push image post-service to docker hub
+        uses: docker/build-push-action@v5
+        with:
+          context: ./post-service/
+          file: ./post-service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/smp:post-service
+
+      - name: push image chat-service to docker hub
+        uses: docker/build-push-action@v5
+        with:
+          context: ./chat-service/
+          file: ./chat-service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/smp:chat-service
